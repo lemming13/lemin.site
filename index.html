@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lemin.site – В разработке</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            color: #333;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            position: relative;
+        }
+        .title {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .hidden-message {
+            display: none;
+            margin-top: 20px;
+            font-size: 1em;
+            color: #777;
+        }
+        .secret-input {
+            margin-top: 20px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Сайт в разработке</div>
+        <input type="text" class="secret-input" placeholder="Введите секретный код">
+        <div class="hidden-message">Поздравляю! Вы нашли скрытое сообщение 🎉</div>
+    </div>
+
+    <script>
+        document.querySelector('.secret-input').addEventListener('input', function(e) {
+            if (e.target.value.toLowerCase() === 'chervi') {
+                document.querySelector('.hidden-message').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
