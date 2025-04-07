@@ -81,7 +81,7 @@ function login() {
 
     const password = document.getElementById('admin-pass').value;
     const hashedPass = hashPassword(password);
-    const correctHash = hashPassword('admin123');
+    const correctHash = hashPassword(process.env.ADMIN_PASSWORD || 'default_password');
 
     if (hashedPass === correctHash) {
         const token = generateToken();
