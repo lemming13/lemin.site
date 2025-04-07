@@ -45,6 +45,17 @@ function generateToken() {
     return Math.random().toString(36).substr(2) + Date.now().toString(36);
 }
 
+// Простая функция для создания отпечатка устройства (на основе характеристик браузера)
+function getDeviceFingerprint() {
+    const fingerprint = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        new Date().getTimezoneOffset()
+    ].join('-');
+    return hashPassword(fingerprint); // Хэшируем отпечаток
+}
+
 function checkLoginAttempts() {
     const attempts = JSON.parse(localStorage.getItem('loginAttempts') || '{"count": 0, "lastAttempt": 0}');
     const now = Date.now();
@@ -78,43 +89,36 @@ function recordLoginAttempt(success) {
 function login() {
     if (!checkLoginAttempts()) return;
 
-    const allowedIPs = ['твой_IP_адрес']; // Замени на свой IP (узнай его на whatismyipaddress.com)
-    fetch('https://api.ipify.org?format=json')
-        .then(response => response.json())
-        .then(data => {
-            const userIP = data.ip;
-            if (!allowedIPs.includes(userIP)) {
-                alert('Доступ запрещён с этого IP!');
-                return;
-            }
+    const password = document.getElementById('admin-pass').value;
+    const hashedPass = hashPassword(password);
+    const correctHash = hashPassword(process.env.ADMIN_PASSWORD || 'default_password');
 
-            const password = document.getElementById('admin-pass').value;
-            const hashedPass = hashPassword(password);
-            const correctHash = hashPassword(process.env.ADMIN_PASSWORD || 'default_password');
-
-            if (hashedPass === correctHash) {
-                const token = generateToken();
-                const tokenExpiry = Date.now() + 24 * 60 * 60 * 1000;
-                localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry }));
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                recordLoginAttempt(true);
-                loadNewsList();
-            } else {
-                alert('Неверный пароль');
-                recordLoginAttempt(false);
-            }
-        })
-        .catch(() => {
-            alert('Не удалось проверить IP-адрес');
-        });
+    if (hashedPass === correctHash) {
+        const token = generateToken();
+        const tokenExpiry = Date.now() + 24 * 60 * 60 * 1000; // Токен действует 24 часа
+        const deviceFingerprint = getDeviceFingerprint(); // Получаем отпечаток устройства
+        localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry, device: deviceFingerprint }));
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        recordLoginAttempt(true);
+        loadNewsList();
+    } else {
+        alert('Неверный пароль');
+        recordLoginAttempt(false);
+    }
 }
 
 function checkAdmin() {
     const tokenData = JSON.parse(localStorage.getItem('adminToken') || '{}');
     const now = Date.now();
+    const currentDeviceFingerprint = getDeviceFingerprint();
 
-    if (tokenData.token && tokenData.expiry && now < tokenData.expiry) {
+    if (
+        tokenData.token &&
+        tokenData.expiry &&
+        now < tokenData.expiry &&
+        tokenData.device === currentDeviceFingerprint // Проверяем, что устройство то же
+    ) {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
         loadNewsList();
