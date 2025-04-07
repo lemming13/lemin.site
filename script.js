@@ -50,7 +50,6 @@ function checkLoginAttempts() {
     const now = Date.now();
     const timeSinceLastAttempt = now - attempts.lastAttempt;
 
-    // Сбрасываем счётчик попыток, если прошло больше 10 минут
     if (timeSinceLastAttempt > 10 * 60 * 1000) {
         attempts.count = 0;
     }
@@ -79,25 +78,38 @@ function recordLoginAttempt(success) {
 function login() {
     if (!checkLoginAttempts()) return;
 
-    const password = document.getElementById('admin-pass').value;
-    const hashedPass = hashPassword(password);
-    const correctHash = hashPassword(process.env.ADMIN_PASSWORD || 'default_password');
+    const allowedIPs = ['твой_IP_адрес']; // Замени на свой IP (узнай его на whatismyipaddress.com)
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+            const userIP = data.ip;
+            if (!allowedIPs.includes(userIP)) {
+                alert('Доступ запрещён с этого IP!');
+                return;
+            }
 
-    if (hashedPass === correctHash) {
-        const token = generateToken();
-        const tokenExpiry = Date.now() + 24 * 60 * 60 * 1000; // Токен действует 24 часа
-        localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry }));
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        recordLoginAttempt(true);
-        loadNewsList();
-    } else {
-        alert('Неверный пароль');
-        recordLoginAttempt(false);
-    }
+            const password = document.getElementById('admin-pass').value;
+            const hashedPass = hashPassword(password);
+            const correctHash = hashPassword(process.env.ADMIN_PASSWORD || 'default_password');
+
+            if (hashedPass === correctHash) {
+                const token = generateToken();
+                const tokenExpiry = Date.now() + 24 * 60 * 60 * 1000;
+                localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry }));
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                recordLoginAttempt(true);
+                loadNewsList();
+            } else {
+                alert('Неверный пароль');
+                recordLoginAttempt(false);
+            }
+        })
+        .catch(() => {
+            alert('Не удалось проверить IP-адрес');
+        });
 }
 
-// Проверка токена
 function checkAdmin() {
     const tokenData = JSON.parse(localStorage.getItem('adminToken') || '{}');
     const now = Date.now();
@@ -107,11 +119,10 @@ function checkAdmin() {
         document.getElementById('admin-panel').style.display = 'block';
         loadNewsList();
     } else {
-        localStorage.removeItem('adminToken'); // Удаляем просроченный токен
+        localStorage.removeItem('adminToken');
     }
 }
 
-// Функция для конвертации изображения в base64
 function imageToBase64(file, callback) {
     const reader = new FileReader();
     reader.onload = () => callback(reader.result);
@@ -119,27 +130,22 @@ function imageToBase64(file, callback) {
     reader.readAsDataURL(file);
 }
 
-// Проверка текста на спам
 function isSpam(text) {
-    // Простая проверка на HTML-теги
     const htmlTagPattern = /<[^>]+>/;
     if (htmlTagPattern.test(text)) {
         return true;
     }
 
-    // Проверка на подозрительные слова (можно расширить список)
     const spamWords = ['casino', 'viagra', 'buy now', 'click here'];
     const lowerText = text.toLowerCase();
     return spamWords.some(word => lowerText.includes(word));
 }
 
-// Проверка частоты добавления новостей
 function canAddNews() {
     const lastNewsTime = localStorage.getItem('lastNewsTime') || 0;
     const now = Date.now();
     const timeSinceLastNews = now - lastNewsTime;
 
-    // Ограничение: не чаще 1 новости в минуту
     if (timeSinceLastNews < 60 * 1000) {
         alert('Слишком частое добавление новостей! Подождите минуту.');
         return false;
@@ -147,7 +153,6 @@ function canAddNews() {
     return true;
 }
 
-// Добавление новости
 function addNews() {
     if (!canAddNews()) return;
 
@@ -155,7 +160,6 @@ function addNews() {
     const text = document.getElementById('news-text').value.trim();
     const image = document.getElementById('news-image').files[0];
 
-    // Ограничение на длину
     if (title.length < 5 || title.length > 100) {
         alert('Заголовок должен быть от 5 до 100 символов!');
         return;
@@ -165,13 +169,11 @@ function addNews() {
         return;
     }
 
-    // Проверка на спам
     if (isSpam(title) || isSpam(text)) {
         alert('Обнаружен подозрительный контент! Удалите HTML-теги или спам-слова.');
         return;
     }
 
-    // Обработка изображения
     const addNewsItem = (imageBase64) => {
         const newsItem = {
             id: Date.now(),
@@ -208,7 +210,6 @@ function addNews() {
     }
 }
 
-// Удаление новости
 function deleteNews(id) {
     let news = JSON.parse(localStorage.getItem('news') || '[]');
     news = news.filter(item => item.id !== id);
@@ -219,7 +220,6 @@ function deleteNews(id) {
     loadNewsList();
 }
 
-// Список новостей в админке
 function loadNewsList() {
     const newsList = document.getElementById('news-list');
     const news = JSON.parse(localStorage.getItem('news') || '[]');
@@ -236,7 +236,6 @@ function loadNewsList() {
     console.log('Список новостей в админке обновлён:', news);
 }
 
-// Отображение новостей
 function updateNews() {
     const newsGrids = document.querySelectorAll('#news-grid');
     if (!newsGrids.length) {
@@ -271,7 +270,6 @@ function updateNews() {
     });
 }
 
-// Погода через IP
 function getWeather() {
     fetch('https://ipapi.co/json/')
         .then(response => response.json())
@@ -279,7 +277,7 @@ function getWeather() {
             const lat = data.latitude;
             const lon = data.longitude;
             const city = data.city;
-            const apiKey = '661758320f4c26bcba19439cd7840b9b'; // Замени на свой ключ
+            const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
             fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=ru&appid=${apiKey}`)
                 .then(response => response.json())
                 .then(weatherData => {
@@ -311,7 +309,6 @@ function getWeatherIcon(condition) {
     }
 }
 
-// Пасхалки
 function easterEgg() {
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'q') {
