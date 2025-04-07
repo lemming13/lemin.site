@@ -45,17 +45,6 @@ function generateToken() {
     return Math.random().toString(36).substr(2) + Date.now().toString(36);
 }
 
-// Простая функция для создания отпечатка устройства (на основе характеристик браузера)
-function getDeviceFingerprint() {
-    const fingerprint = [
-        navigator.userAgent,
-        navigator.language,
-        screen.width + 'x' + screen.height,
-        new Date().getTimezoneOffset()
-    ].join('-');
-    return hashPassword(fingerprint); // Хэшируем отпечаток
-}
-
 function checkLoginAttempts() {
     const attempts = JSON.parse(localStorage.getItem('loginAttempts') || '{"count": 0, "lastAttempt": 0}');
     const now = Date.now();
@@ -91,39 +80,46 @@ function login() {
 
     const password = document.getElementById('admin-pass').value;
     const hashedPass = hashPassword(password);
-    const correctHash = hashPassword(process.env.ADMIN_PASSWORD || 'default_password');
+
+    // Пробуем взять пароль из переменной окружения (для Vercel)
+    // Если переменной нет, используем запасной пароль для локального тестирования
+    const adminPassword = typeof process !== 'undefined' && process.env && process.env.ADMIN_PASSWORD
+        ? process.env.ADMIN_PASSWORD
+        : 'G7m$kP!9qL2v'; // Запасной пароль для локального тестирования
+    const correctHash = hashPassword(adminPassword);
+
+    console.log('Введённый пароль (хэш):', hashedPass);
+    console.log('Правильный пароль (хэш):', correctHash);
+    console.log('Используемый пароль:', adminPassword);
 
     if (hashedPass === correctHash) {
         const token = generateToken();
         const tokenExpiry = Date.now() + 24 * 60 * 60 * 1000; // Токен действует 24 часа
-        const deviceFingerprint = getDeviceFingerprint(); // Получаем отпечаток устройства
-        localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry, device: deviceFingerprint }));
+        localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry }));
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
         recordLoginAttempt(true);
         loadNewsList();
+        console.log('Успешный вход! Токен сохранён:', token);
     } else {
         alert('Неверный пароль');
         recordLoginAttempt(false);
+        console.log('Ошибка входа: пароли не совпадают');
     }
 }
 
 function checkAdmin() {
     const tokenData = JSON.parse(localStorage.getItem('adminToken') || '{}');
     const now = Date.now();
-    const currentDeviceFingerprint = getDeviceFingerprint();
 
-    if (
-        tokenData.token &&
-        tokenData.expiry &&
-        now < tokenData.expiry &&
-        tokenData.device === currentDeviceFingerprint // Проверяем, что устройство то же
-    ) {
+    if (tokenData.token && tokenData.expiry && now < tokenData.expiry) {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
         loadNewsList();
+        console.log('Токен валиден, вход выполнен');
     } else {
         localStorage.removeItem('adminToken');
+        console.log('Токен недействителен или истёк');
     }
 }
 
