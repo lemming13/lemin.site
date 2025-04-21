@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>lemin.site - Главная</title>
+    <title>lemin.site</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-    <!-- Шапка -->
+<body class="index-page">
     <header class="header">
-        <div class="logo"><a href="index.html">lemin.site</a></div>
+        <div class="logo">
+            <img src="avatar.jpg" alt="Логотип">
+        </div>
         <nav class="nav">
             <a href="index.html">Главная</a>
             <a href="projects.html">Проекты</a>
@@ -20,91 +19,59 @@
             <a href="contacts.html">Контакты</a>
             <a href="about.html">Обо мне</a>
         </nav>
-        <div class="header-controls">
-            <button id="theme-toggle" class="theme-btn">
-                <span class="material-icons">brightness_6</span>
-            </button>
-            <button id="admin-toggle" class="admin-btn">
-                <span class="material-icons">admin_panel_settings</span>
-            </button>
+        <div class="weather">
+            <span id="weather-icon" class="material-icons"></span>
+            <span id="weather-info">Загрузка погоды...</span>
         </div>
+        <button id="theme-toggle" class="btn">Сменить тему</button>
+        <button id="admin-toggle" class="btn">Админ</button>
     </header>
 
-    <!-- Герой-секция -->
-    <section class="hero">
-        <h1>Добро пожаловать на lemin.site</h1>
-        <p>Создаю цифровые миры с душой и технологиями</p>
-        <a href="projects.html" class="btn">Посмотреть проекты</a>
-    </section>
-
-    <!-- Контент -->
     <div class="container">
-        <main class="main-content">
-            <!-- Кратко обо мне -->
-            <section class="intro section">
-                <h2>Кто я?</h2>
-                <div class="intro-content">
-                    <img src="avatar.png" alt="Аватар" class="avatar">
-                    <p>Привет, я Lemming — разработчик, мечтатель и создатель. Работаю над LemChat и другими проектами, чтобы сделать мир интереснее.</p>
-                </div>
-            </section>
+        <h1>Добро пожаловать на lemin.site</h1>
+        <p>Создаю цифровое будущее с душой и технологиями</p>
+        <a href="projects.html" class="btn">Посмотреть проекты</a>
 
-            <!-- Последние новости -->
-            <section class="news section">
-                <h2>Последние новости</h2>
-                <div class="news-grid" id="news-grid"></div>
-                <div class="news-button-wrapper">
-                    <a href="news.html" class="btn secondary">Все новости</a>
-                </div>
-            </section>
+        <h2>Кто я?</h2>
+        <img src="lemchat.jpg" alt="LemChat">
+        <p>Привет, я Lemming — разработчик, мечтатель и созидатель. Работаю над LemChat и другими проектами, чтобы сделать мир интереснее.</p>
 
-            <!-- Виджет погоды -->
-            <section class="widget section">
-                <h2>Погода</h2>
-                <div class="weather-card">
-                    <span id="weather-icon" class="material-icons">cloud</span>
-                    <p id="weather-info">Загрузка...</p>
-                </div>
-            </section>
-        </main>
-
-        <!-- Боковая панель -->
-            <div class="social-links">
-                <h3>Соцсети</h3>
-                <a href="https://www.youtube.com/@studio7940">YouTube 1</a> | <a href="https://www.youtube.com/@tech_hello1">YouTube 2</a> 
-            </div>
-        </aside>
+        <h2>Последние новости</h2>
+        <div id="news-grid"></div>
     </div>
 
-
-    <!-- Подвал -->
-    <footer class="footer">
-        <p>© 2025 lemin.site | Создано с ❤️</p>
-    </footer>
-
-    <!-- Админ-панель (модальное окно) -->
     <div id="admin-modal" class="modal">
         <div class="modal-content">
             <span id="close-admin" class="close">×</span>
-            <h2>Админка</h2>
             <div id="login-form">
+                <h2>Вход в админ-панель</h2>
                 <input type="password" id="admin-pass" placeholder="Пароль">
                 <button onclick="login()" class="btn">Войти</button>
             </div>
             <div id="admin-panel" style="display: none;">
-                <h3>Добавить новость</h3>
+                <h2>Добавить новость</h2>
                 <input type="text" id="news-title" placeholder="Заголовок">
                 <textarea id="news-text" placeholder="Текст новости"></textarea>
                 <input type="file" id="news-image" accept="image/*">
-                <button onclick="addNews()" class="btn">Добавить</button>
-                <h3>Управление новостями</h3>
+                <button onclick="previewNews()" class="btn">Предпросмотр</button>
+                <button onclick="addNews()" class="btn">Опубликовать</button>
+                <button onclick="clearForm()" class="btn">Очистить</button>
+                <div id="news-preview" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; display: none;">
+                    <h3>Предпросмотр:</h3>
+                    <img id="preview-image" src="" alt="Изображение" style="max-width: 100%; height: auto; display: none;">
+                    <h4 id="preview-title"></h4>
+                    <p id="preview-text"></p>
+                </div>
+                <h3>Список новостей</h3>
                 <div id="news-list"></div>
             </div>
         </div>
     </div>
 
+    <footer class="footer">
+        <p>&copy; 2025 lemin.site. Все права защищены.</p>
+    </footer>
+
     <script src="script.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5244774924877976"
-     crossorigin="anonymous"></script>
 </body>
 </html>
