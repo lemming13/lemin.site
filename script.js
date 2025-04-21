@@ -11,232 +11,7 @@ if (localStorage.getItem('theme') === 'dark') {
     body.classList.add('dark-theme');
 }
 
-// Модальное окно админки
-const adminButton = document.getElementById('admin-toggle');
-const adminModal = document.getElementById('admin-modal');
-const closeAdmin = document.getElementById('close-admin');
-
-adminButton.addEventListener('click', () => {
-    adminModal.style.display = 'block';
-});
-
-closeAdmin.addEventListener('click', () => {
-    adminModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === adminModal) {
-        adminModal.style.display = 'none';
-    }
-});
-
-// Простая авторизация с токеном и защитой от брутфорса
-function hashPassword(password) {
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return hash.toString();
-}
-
-function generateToken() {
-    return Math.random().toString(36).substr(2) + Date.now().toString(36);
-}
-
-function checkLoginAttempts() {
-    const attempts = JSON.parse(localStorage.getItem('loginAttempts') || '{"count": 0, "lastAttempt": 0}');
-    const now = Date.now();
-    const timeSinceLastAttempt = now - attempts.lastAttempt;
-
-    // Сбрасываем счётчик попыток, если прошло больше 10 минут
-    if (timeSinceLastAttempt > 10 * 60 * 1000) {
-        attempts.count = 0;
-    }
-
-    if (attempts.count >= 5) {
-        alert('Слишком много попыток входа! Подождите 10 минут.');
-        return false;
-    }
-
-    return true;
-}
-
-function recordLoginAttempt(success) {
-    const attempts = JSON.parse(localStorage.getItem('loginAttempts') || '{"count": 0, "lastAttempt": 0}');
-    const now = Date.now();
-
-    if (success) {
-        attempts.count = 0;
-    } else {
-        attempts.count += 1;
-    }
-    attempts.lastAttempt = now;
-    localStorage.setItem('loginAttempts', JSON.stringify(attempts));
-}
-
-function login() {
-    if (!checkLoginAttempts()) return;
-
-    const password = document.getElementById('admin-pass').value;
-    const hashedPass = hashPassword(password);
-    const correctHash = hashPassword('admin123');
-
-    if (hashedPass === correctHash) {
-        const token = generateToken();
-        const tokenExpiry = Date.now() + 24 * 60 * 60 * 1000; // Токен действует 24 часа
-        localStorage.setItem('adminToken', JSON.stringify({ token, expiry: tokenExpiry }));
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        recordLoginAttempt(true);
-        loadNewsList();
-    } else {
-        alert('Неверный пароль');
-        recordLoginAttempt(false);
-    }
-}
-
-// Проверка токена
-function checkAdmin() {
-    const tokenData = JSON.parse(localStorage.getItem('adminToken') || '{}');
-    const now = Date.now();
-
-    if (tokenData.token && tokenData.expiry && now < tokenData.expiry) {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        loadNewsList();
-    } else {
-        localStorage.removeItem('adminToken'); // Удаляем просроченный токен
-    }
-}
-
-// Функция для конвертации изображения в base64
-function imageToBase64(file, callback) {
-    const reader = new FileReader();
-    reader.onload = () => callback(reader.result);
-    reader.onerror = () => callback(null);
-    reader.readAsDataURL(file);
-}
-
-// Проверка текста на спам
-function isSpam(text) {
-    // Простая проверка на HTML-теги
-    const htmlTagPattern = /<[^>]+>/;
-    if (htmlTagPattern.test(text)) {
-        return true;
-    }
-
-    // Проверка на подозрительные слова (можно расширить список)
-    const spamWords = ['casino', 'viagra', 'buy now', 'click here'];
-    const lowerText = text.toLowerCase();
-    return spamWords.some(word => lowerText.includes(word));
-}
-
-// Проверка частоты добавления новостей
-function canAddNews() {
-    const lastNewsTime = localStorage.getItem('lastNewsTime') || 0;
-    const now = Date.now();
-    const timeSinceLastNews = now - lastNewsTime;
-
-    // Ограничение: не чаще 1 новости в минуту
-    if (timeSinceLastNews < 60 * 1000) {
-        alert('Слишком частое добавление новостей! Подождите минуту.');
-        return false;
-    }
-    return true;
-}
-
-// Добавление новости
-function addNews() {
-    if (!canAddNews()) return;
-
-    const title = document.getElementById('news-title').value.trim();
-    const text = document.getElementById('news-text').value.trim();
-    const image = document.getElementById('news-image').files[0];
-
-    // Ограничение на длину
-    if (title.length < 5 || title.length > 100) {
-        alert('Заголовок должен быть от 5 до 100 символов!');
-        return;
-    }
-    if (text.length < 10 || text.length > 1000) {
-        alert('Текст новости должен быть от 10 до 1000 символов!');
-        return;
-    }
-
-    // Проверка на спам
-    if (isSpam(title) || isSpam(text)) {
-        alert('Обнаружен подозрительный контент! Удалите HTML-теги или спам-слова.');
-        return;
-    }
-
-    // Обработка изображения
-    const addNewsItem = (imageBase64) => {
-        const newsItem = {
-            id: Date.now(),
-            title,
-            text,
-            date: new Date().toLocaleDateString(),
-            image: imageBase64 || 'news1.jpg'
-        };
-
-        let news = JSON.parse(localStorage.getItem('news') || '[]');
-        news.push(newsItem);
-        localStorage.setItem('news', JSON.stringify(news));
-        localStorage.setItem('lastNewsTime', Date.now());
-
-        console.log('Новость добавлена:', newsItem);
-        console.log('Все новости в localStorage:', news);
-
-        alert('Новость добавлена!');
-        adminModal.style.display = 'none';
-        updateNews();
-        loadNewsList();
-    };
-
-    if (image) {
-        imageToBase64(image, (base64) => {
-            if (base64) {
-                addNewsItem(base64);
-            } else {
-                alert('Ошибка при загрузке изображения!');
-            }
-        });
-    } else {
-        addNewsItem(null);
-    }
-}
-
-// Удаление новости
-function deleteNews(id) {
-    let news = JSON.parse(localStorage.getItem('news') || '[]');
-    news = news.filter(item => item.id !== id);
-    localStorage.setItem('news', JSON.stringify(news));
-    console.log('Новость удалена, ID:', id);
-    console.log('Оставшиеся новости:', news);
-    updateNews();
-    loadNewsList();
-}
-
-// Список новостей в админке
-function loadNewsList() {
-    const newsList = document.getElementById('news-list');
-    const news = JSON.parse(localStorage.getItem('news') || '[]');
-    newsList.innerHTML = '';
-    news.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'news-item';
-        div.innerHTML = `
-            <span>${item.date} - ${item.title}</span>
-            <button onclick="deleteNews(${item.id})" class="btn">Удалить</button>
-        `;
-        newsList.appendChild(div);
-    });
-    console.log('Список новостей в админке обновлён:', news);
-}
-
-// Отображение новостей
+// Отображение новостей из newsData.js
 function updateNews() {
     const newsGrids = document.querySelectorAll('#news-grid');
     if (!newsGrids.length) {
@@ -244,15 +19,14 @@ function updateNews() {
         return;
     }
 
-    const news = JSON.parse(localStorage.getItem('news') || '[]');
-    console.log('Загружено новостей из localStorage:', news);
+    console.log('Загружено новостей из newsData:', newsData);
 
     const isIndexPage = document.querySelector('body').classList.contains('index-page');
     console.log('Это главная страница?', isIndexPage);
 
     newsGrids.forEach(grid => {
         grid.innerHTML = '';
-        const newsToShow = isIndexPage ? news.slice(0, 3) : news;
+        const newsToShow = isIndexPage ? newsData.slice(0, 3) : newsData;
 
         if (newsToShow.length === 0) {
             grid.innerHTML = '<p>Новостей пока нет.</p>';
@@ -360,6 +134,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateNews();
     getWeather();
-    checkAdmin();
     easterEgg();
 });
