@@ -4,7 +4,7 @@ const newsData = [
         title: "Запуск сайта",
         text: "Мы запустили бета-версию lemin.site! Это cайт нового поколения.",
         date: "21.04.2025",
-        image: "LemChat.png"
+        image: "LeminBeta.png"
     }
 ];
 
