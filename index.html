@@ -23,9 +23,6 @@
             <button id="theme-toggle" class="theme-btn">
                 <span class="material-icons">brightness_6</span>
             </button>
-            <button id="admin-toggle" class="admin-btn">
-                <span class="material-icons">admin_panel_settings</span>
-            </button>
         </div>
     </header>
 
@@ -74,7 +71,7 @@
             </div>
             <div class="social-links">
                 <h3>Соцсети</h3>
-                <a href="https://www.youtube.com/@studio7940">YouTube 1</a> | <a href="https://www.youtube.com/@tech_hello1">YouTube 2</a> 
+                <a href="https://www.youtube.com/@studio7940">YouTube 1</a> | <a href="https://www.youtube.com/@tech_hello1">YouTube 2</a>
             </div>
         </aside>
     </div>
@@ -91,27 +88,7 @@
         <p>© 2025 lemin.site | Создано с ❤️</p>
     </footer>
 
-    <!-- Админ-панель (модальное окно) -->
-    <div id="admin-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-admin" class="close">×</span>
-            <h2>Админка</h2>
-            <div id="login-form">
-                <input type="password" id="admin-pass" placeholder="Пароль">
-                <button onclick="login()" class="btn">Войти</button>
-            </div>
-            <div id="admin-panel" style="display: none;">
-                <h3>Добавить новость</h3>
-                <input type="text" id="news-title" placeholder="Заголовок">
-                <textarea id="news-text" placeholder="Текст новости"></textarea>
-                <input type="file" id="news-image" accept="image/*">
-                <button onclick="addNews()" class="btn">Добавить</button>
-                <h3>Управление новостями</h3>
-                <div id="news-list"></div>
-            </div>
-        </div>
-    </div>
-
+    <script src="newsData.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
