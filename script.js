@@ -19,13 +19,24 @@ function updateNews() {
         return;
     }
 
+    // Проверяем, что newsData доступен
+    if (!newsData || !Array.isArray(newsData)) {
+        console.error('newsData не определён или не является массивом:', newsData);
+        newsGrids.forEach(grid => {
+            grid.innerHTML = '<p>Ошибка загрузки новостей.</p>';
+        });
+        return;
+    }
+
     console.log('Загружено новостей из newsData:', newsData);
 
-    const isIndexPage = document.querySelector('body').classList.contains('index-page');
+    // Определяем, является ли текущая страница главной
+    const isIndexPage = window.location.pathname === '/' || window.location.pathname.includes('index') || window.location.pathname === '';
     console.log('Это главная страница?', isIndexPage);
 
     newsGrids.forEach(grid => {
         grid.innerHTML = '';
+        // Если это главная страница, показываем только 3 новости, иначе — все
         const newsToShow = isIndexPage ? newsData.slice(0, 3) : newsData;
 
         if (newsToShow.length === 0) {
@@ -129,9 +140,6 @@ function easterEgg() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname === '/' || window.location.pathname.includes('index') || window.location.pathname === '') {
-        document.body.classList.add('index-page');
-    }
     updateNews();
     getWeather();
     easterEgg();
