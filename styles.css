@@ -348,11 +348,11 @@ body.dark-theme {
     background: rgba(30, 42, 68, 0.9);
 }
 
-/* Адаптивность */
+/* Улучшенная адаптивность */
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
-        padding: 10px;
+        padding: 15px;
     }
 
     .main-content, .sidebar {
@@ -360,30 +360,41 @@ body.dark-theme {
     }
 
     .hero {
-        padding: 50px 10px;
-        margin: 10px;
+        padding: 60px 15px;
+        margin: 15px;
     }
 
     .hero h1 {
-        font-size: 24px;
+        font-size: 28px;
     }
 
     .hero p {
         font-size: 16px;
     }
 
-    .nav {
+    .header {
         flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .nav {
+        flex-wrap: wrap;
         gap: 10px;
+        justify-content: center;
     }
 
     .nav a {
-        margin-left: 0;
+        font-size: 16px;
+        margin: 0 8px;
     }
 
-    .header {
-        flex-direction: column;
-        gap: 10px;
+    .header-controls {
+        gap: 15px;
+    }
+
+    .theme-btn, .admin-btn {
+        font-size: 20px;
     }
 
     .project-grid, .news-grid {
@@ -393,9 +404,13 @@ body.dark-theme {
     .intro-content, .about-content, .contacts-content {
         flex-direction: column;
         text-align: center;
+        padding: 15px;
+        gap: 15px;
     }
 
     .avatar {
+        width: 80px;
+        height: 80px;
         margin: 0 auto;
     }
 
@@ -404,13 +419,45 @@ body.dark-theme {
     }
 
     .bottom-ads {
-        margin: 10px;
+        margin: 15px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .card img {
+        height: 140px;
+    }
+
+    .card h3 {
+        font-size: 18px;
+    }
+
+    .card p {
+        font-size: 14px;
+    }
+
+    .modal-content {
+        margin: 20% auto;
+        padding: 15px;
+        max-width: 90%;
+    }
+
+    #admin-panel input, #admin-panel textarea {
+        padding: 8px;
+        font-size: 14px;
     }
 }
 
 @media (max-width: 480px) {
+    .hero {
+        padding: 40px 10px;
+        margin: 10px;
+    }
+
     .hero h1 {
-        font-size: 20px;
+        font-size: 22px;
     }
 
     .hero p {
@@ -423,10 +470,48 @@ body.dark-theme {
     }
 
     .card {
-        padding: 15px;
+        padding: 12px;
     }
 
     .card img {
         height: 120px;
+    }
+
+    .card h3 {
+        font-size: 16px;
+    }
+
+    .card p {
+        font-size: 13px;
+    }
+
+    .nav a {
+        font-size: 14px;
+        margin: 0 5px;
+    }
+
+    .logo a {
+        font-size: 20px;
+    }
+
+    .theme-btn, .admin-btn {
+        font-size: 18px;
+    }
+
+    .avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .intro-content p, .about-content p, .contacts-content p {
+        font-size: 14px;
+    }
+
+    .weather-card {
+        padding: 15px;
+    }
+
+    .weather-card p {
+        font-size: 14px;
     }
 }
